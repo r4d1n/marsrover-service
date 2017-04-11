@@ -22,7 +22,8 @@ func init() {
 func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/manifest/{rover}", getManifest)
-	r.HandleFunc("/rover/{rover}/sol/{sol}", getImages)
+	r.HandleFunc("/rover/{rover}/sol/{sol}", getImagesBySol)
+	r.HandleFunc("/rover/{rover}/earthdate/{date}", getImagesByEarthDate)
 	server := &http.Server{
 		Addr:         ":8080",
 		Handler:      r,
@@ -47,13 +48,27 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 	w.Write(data)
 }
 
-func getImages(w http.ResponseWriter, r *http.Request) {
+func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 	rover := mux.Vars(r)["rover"]
 	sol, err := strconv.Atoi(mux.Vars(r)["sol"])
 	if err != nil {
 		log.Fatal(err)
 	}
 	p, err := c.GetImagesBySol(rover, sol)
+	if err != nil {
+		log.Fatal(err)
+	}
+	data, err := json.Marshal(p)
+	if err != nil {
+		log.Fatal(err)
+	}
+	w.Write(data)
+}
+
+func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
+	rover := mux.Vars(r)["rover"]
+	date := mux.Vars(r)["date"]
+	p, err := c.GetImagesByEarthDate(rover, date)
 	if err != nil {
 		log.Fatal(err)
 	}
