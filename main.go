@@ -50,7 +50,7 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 		var err error
 		data, err = mars.GetManifest(rover)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		c.Set(key, data, cache.DefaultExpiration)
 	}
@@ -78,7 +78,7 @@ func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 		var err error
 		data, err = mars.GetImagesBySol(rover, sol)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		c.Set(key, data, cache.DefaultExpiration)
 	}
@@ -103,7 +103,7 @@ func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
 		var err error
 		data, err = mars.GetImagesByEarthDate(rover, date)
 		if err != nil {
-			log.Fatal(err)
+			fmt.Println(err)
 		}
 		c.Set(key, data, cache.DefaultExpiration)
 	}
