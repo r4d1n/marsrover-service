@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,18 +24,19 @@ func init() {
 }
 
 func main() {
+	port := flag.Int("port", 3333, "the port that the service should listen on")
 	r := mux.NewRouter()
 	r.HandleFunc("/mars/manifest/{rover}", getManifest)
 	r.HandleFunc("/mars/photos/{rover}/sol/{sol}", getImagesBySol)
 	r.HandleFunc("/mars/photos/{rover}/earthdate/{date}", getImagesByEarthDate)
+	flag.Parse()
 	server := &http.Server{
-		Addr:         ":8080",
+		Addr:         fmt.Sprintf(":%d", *port),
 		Handler:      r,
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-
-	fmt.Println("serving on port 8080")
+	fmt.Printf("serving on port %d \n", *port)
 	log.Fatal(server.ListenAndServe())
 }
 
