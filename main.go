@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -37,7 +36,7 @@ func main() {
 		ReadTimeout:  15 * time.Second,
 	}
 	fmt.Printf("serving on port %d \n", *port)
-	log.Fatal(server.ListenAndServe())
+	fmt.Println(server.ListenAndServe())
 }
 
 func getManifest(w http.ResponseWriter, r *http.Request) {
@@ -58,7 +57,7 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -69,7 +68,8 @@ func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 	rover := mux.Vars(r)["rover"]
 	sol, err := strconv.Atoi(mux.Vars(r)["sol"])
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		http.NotFound(w, r)
 	}
 	key := fmt.Sprintf("sol:%s:%d", rover, sol)
 	if x, found := c.Get(key); found {
@@ -81,12 +81,13 @@ func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 		data, err = mars.GetImagesBySol(rover, sol)
 		if err != nil {
 			fmt.Println(err)
+			http.NotFound(w, r)
 		}
 		c.Set(key, data, cache.DefaultExpiration)
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
@@ -106,12 +107,14 @@ func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
 		data, err = mars.GetImagesByEarthDate(rover, date)
 		if err != nil {
 			fmt.Println(err)
+			http.NotFound(w, r)
 		}
 		c.Set(key, data, cache.DefaultExpiration)
 	}
 	json, err := json.Marshal(data)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		http.NotFound(w, r)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(json)
