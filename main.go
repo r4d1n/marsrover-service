@@ -4,18 +4,17 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/garyburd/redigo/redis"
 	"github.com/gorilla/mux"
 	"github.com/r4d1n/marsrover"
 )
 
 var mars *marsrover.Client
+var pool = newPool()
 
 func init() {
 	mars = marsrover.NewClient(os.Getenv("NASA_API_KEY"))
@@ -42,10 +41,7 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 	var j []byte
 	rover := mux.Vars(r)["rover"]
 	key := fmt.Sprintf("manifest:%s", rover)
-	conn, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-		log.Fatal(err)
-	}
+	conn := pool.Get()
 	defer conn.Close()
 	if reply, _ := conn.Do("GET", key); reply != nil {
 		fmt.Printf("manifest:%s is in the cache \n", rover)
@@ -61,19 +57,13 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 		}
 	}
-	if err != nil {
-		fmt.Println(err)
-	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
 }
 
 func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 	var j []byte
-	conn, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-		log.Fatal(err)
-	}
+	conn := pool.Get()
 	defer conn.Close()
 	rover := mux.Vars(r)["rover"]
 	sol, err := strconv.Atoi(mux.Vars(r)["sol"])
@@ -97,19 +87,13 @@ func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 		}
 	}
-	if err != nil {
-		fmt.Println(err)
-	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
 }
 
 func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
 	var j []byte
-	conn, err := redis.Dial("tcp", ":6379")
-	if err != nil {
-		log.Fatal(err)
-	}
+	conn := pool.Get()
 	defer conn.Close()
 	rover := mux.Vars(r)["rover"]
 	date := mux.Vars(r)["date"]
@@ -128,10 +112,6 @@ func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 			http.NotFound(w, r)
 		}
-	}
-	if err != nil {
-		fmt.Println(err)
-		http.NotFound(w, r)
 	}
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(j)
