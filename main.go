@@ -71,7 +71,7 @@ func getImagesBySol(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		http.NotFound(w, r)
 	}
-	key := fmt.Sprintf("sol:%s:%d", rover, sol)
+	key := fmt.Sprintf("rover:%s:sol:%d", rover, sol)
 	if reply, _ := conn.Do("GET", key); reply != nil {
 		fmt.Printf("%s is in the cache \n", key)
 		j = reply.([]byte)
@@ -97,7 +97,7 @@ func getImagesByEarthDate(w http.ResponseWriter, r *http.Request) {
 	defer conn.Close()
 	rover := mux.Vars(r)["rover"]
 	date := mux.Vars(r)["date"]
-	key := fmt.Sprintf("date:%s:%s", rover, date)
+	key := fmt.Sprintf("rover:%s:date:%s", rover, date)
 	if reply, _ := conn.Do("GET", key); reply != nil {
 		fmt.Printf("%s is in the cache \n", key)
 		j = reply.([]byte)
