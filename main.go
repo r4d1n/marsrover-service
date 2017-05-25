@@ -52,7 +52,11 @@ func getManifest(w http.ResponseWriter, r *http.Request) {
 		var err error
 		data, err = mars.GetManifest(rover)
 		j, err = json.Marshal(data)
+		if err != nil {
+			fmt.Println(err)
+		}
 		_, err = conn.Do("SET", key, j)
+		_, err = conn.Do("EXPIRE", key, int(time.Hour*24))
 		if err != nil {
 			fmt.Println(err)
 		}
